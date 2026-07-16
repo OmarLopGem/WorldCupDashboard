@@ -1,0 +1,157 @@
+:root {
+    --page-bg: #eef3f7;
+    --card-bg: #ffffff;
+    --card-border: rgba(20, 54, 66, 0.08);
+    --title-color: #143642;
+    --text-muted: #5b7280;
+    --header-bg: linear-gradient(135deg, #143642 0%, #1f6273 58%, #2dcf72 100%);
+    --shadow-soft: 0 16px 40px rgba(20, 54, 66, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f7fafc 0%, var(--page-bg) 100%);
+    font-family: Arial, Helvetica, sans-serif;
+    color: #16313d;
+}
+
+.site-header {
+    color: white;
+    padding: 3.2rem 1.5rem;
+    background: var(--header-bg);
+    box-shadow: 0 12px 32px rgba(20, 54, 66, 0.22);
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.site-title {
+    margin: 0;
+    font-size: clamp(2.1rem, 4vw, 3.5rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.site-subtitle {
+    margin: 0.8rem 0 0;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.page-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 2.5rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.chart-container {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 22px;
+    padding: 1.3rem 1.3rem 1rem;
+    box-shadow: var(--shadow-soft);
+    min-height: 470px;
+}
+
+.chart-container-wide {
+    grid-column: 1 / -1;
+}
+
+.chart-container h2 {
+    margin: 0;
+    color: var(--title-color);
+    font-size: 1.25rem;
+}
+
+.chart-description {
+    margin: 0.45rem 0 1rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+
+.chart-frame {
+    width: 100%;
+    min-height: 360px;
+}
+
+.chart-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.interactive-shape {
+    cursor: pointer;
+}
+
+.axis text {
+    fill: #4c6471;
+    font-size: 11px;
+}
+
+.axis path,
+.axis line {
+    stroke: rgba(20, 54, 66, 0.22);
+}
+
+.grid line {
+    stroke: rgba(20, 54, 66, 0.09);
+}
+
+.grid path {
+    stroke: none;
+}
+
+.chart-label {
+    fill: #284551;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.team-dot-label {
+    fill: #183946;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.pie-label {
+    fill: #183946;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pie-value {
+    fill: #4c6471;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.tooltip-text {
+    fill: #16313d;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+@media (max-width: 860px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-frame {
+        min-height: 340px;
+    }
+}

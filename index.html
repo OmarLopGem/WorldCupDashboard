@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Cup Dashboard</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="site-title">World Cup Dashboard</h1>
+            <p class="site-subtitle">Qatar 2022 data visualized with D3.js</p>
+        </div>
+    </header>
+    <main class="page-content">
+        <section class="dashboard-grid">
+            <article class="chart-container">
+                <h2>Points by Team</h2>
+                <p class="chart-description">Top teams by points in the World Cup 2022 group stage.</p>
+                <div id="points-chart" class="chart-frame"></div>
+            </article>
+
+            <article class="chart-container">
+                <h2>Goal Share</h2>
+                <p class="chart-description">Pie chart of the teams that scored the most goals.</p>
+                <div id="goals-chart" class="chart-frame"></div>
+            </article>
+
+            <article class="chart-container chart-container-wide">
+                <h2>Goal Difference</h2>
+                <p class="chart-description">Comparison of the best goal differences from the tournament.</p>
+                <div id="diff-chart" class="chart-frame"></div>
+            </article>
+        </section>
+    </main>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+	<script src="./main.js"></script>
+</body>
+</html>
