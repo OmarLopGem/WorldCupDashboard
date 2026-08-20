@@ -39,6 +39,23 @@ function createSvg(containerSelector, width, height) {
         .attr("viewBox", `0 0 ${width} ${height}`);
 }
 
+function showLoading(containerSelector) {
+    const container = d3.select(containerSelector);
+    container.selectAll("*").remove();
+
+    const widths = ["lg", "md", "sm", "md", "lg", "sm", "md", "lg"];
+    const stack = container.append("div").attr("class", "skeleton-stack");
+
+    stack.selectAll("div")
+        .data(widths)
+        .join("div")
+        .attr("class", d => `skeleton-bar skeleton-bar--${d}`);
+}
+
+function hideLoading(containerSelector) {
+    d3.select(containerSelector).selectAll("*").remove();
+}
+
 function drawPointsChart(data) {
     const width = 540;
     const height = 320;
@@ -259,7 +276,219 @@ function drawGoalDiffChart(data) {
         .call(d3.axisBottom(xScale).ticks(6));
 }
 
+function drawWdlChart(data) {
+    const width = 540;
+    const height = 320;
+    const margin = { top: 20, right: 20, bottom: 20, left: 110 };
+
+    const svg = createSvg("#wdl-chart", width, height);
+    const chart = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    const yScale = d3.scaleBand()
+        .domain(data.map(d => d.team))
+        .range([0, innerHeight])
+        .padding(0.25);
+
+    const xScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.win + d.draw + d.lose)])
+        .range([0, innerWidth]);
+
+    const segments = ["win", "draw", "lose"];
+    const segmentColors = {
+        win: "#2ecc71",
+        draw: "#f4b400",
+        lose: "#c0392b"
+    };
+
+    const stack = d3.stack().keys(segments)(data);
+
+    chart.append("g")
+        .attr("class", "grid")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).tickSize(-innerHeight).tickFormat(""));
+
+    chart.selectAll("g.layer")
+        .data(stack)
+        .join("g")
+        .attr("class", "layer")
+        .attr("fill", d => segmentColors[d.key])
+        .selectAll("rect")
+        .data(d => d)
+        .join("rect")
+        .attr("class", "interactive-shape")
+        .attr("x", d => xScale(d[0]))
+        .attr("y", d => yScale(d.data.team))
+        .attr("width", d => Math.max(0, xScale(d[1]) - xScale(d[0])))
+        .attr("height", yScale.bandwidth())
+        .on("mouseenter", function(event, d) {
+            d3.select(this).transition().duration(150).attr("opacity", 0.75);
+        })
+        .on("mouseleave", function(event, d) {
+            d3.select(this).transition().duration(150).attr("opacity", 1);
+        });
+
+    chart.selectAll(".chart-label")
+        .data(data)
+        .join("text")
+        .attr("class", "chart-label")
+        .attr("x", d => xScale(d.win + d.draw + d.lose) + 6)
+        .attr("y", d => yScale(d.team) + yScale.bandwidth() / 2 + 4)
+        .text(d => `${d.win}W ${d.draw}D ${d.lose}L`);
+
+    chart.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(yScale));
+
+    chart.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).ticks(3));
+}
+
+function drawDefenseChart(data) {
+    const width = 540;
+    const height = 320;
+    const margin = { top: 20, right: 20, bottom: 20, left: 110 };
+
+    const svg = createSvg("#defense-chart", width, height);
+    const chart = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    const yScale = d3.scaleBand()
+        .domain(data.map(d => d.team))
+        .range([0, innerHeight])
+        .padding(0.2);
+
+    const xScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.goalsAgainst)])
+        .range([0, innerWidth]);
+
+    chart.append("g")
+        .attr("class", "grid")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).tickSize(-innerHeight).tickFormat(""));
+
+    const bars = chart.selectAll("rect")
+        .data(data)
+        .join("rect")
+        .attr("class", "interactive-shape")
+        .attr("x", 0)
+        .attr("y", d => yScale(d.team))
+        .attr("width", d => xScale(d.goalsAgainst))
+        .attr("height", yScale.bandwidth())
+        .attr("fill", d => getGroupColor(d.group));
+
+    chart.selectAll(".chart-label")
+        .data(data)
+        .join("text")
+        .attr("class", "chart-label")
+        .attr("x", d => xScale(d.goalsAgainst) + 6)
+        .attr("y", d => yScale(d.team) + yScale.bandwidth() / 2 + 4)
+        .text(d => `${d.goalsAgainst} GA`);
+
+    bars.on("mouseenter", function(event, d) {
+        d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("fill", d3.color(getGroupColor(d.group)).darker(0.5));
+    }).on("mouseleave", function(event, d) {
+        d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("fill", getGroupColor(d.group));
+    });
+
+    chart.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(yScale));
+
+    chart.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).ticks(6));
+}
+
+function drawWinRateChart(data) {
+    const width = 540;
+    const height = 320;
+    const margin = { top: 20, right: 20, bottom: 20, left: 110 };
+
+    const svg = createSvg("#winrate-chart", width, height);
+    const chart = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    const yScale = d3.scaleBand()
+        .domain(data.map(d => d.team))
+        .range([0, innerHeight])
+        .padding(0.2);
+
+    const xScale = d3.scaleLinear()
+        .domain([0, 100])
+        .range([0, innerWidth]);
+
+    chart.append("g")
+        .attr("class", "grid")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).tickSize(-innerHeight).tickFormat(""));
+
+    const bars = chart.selectAll("rect")
+        .data(data)
+        .join("rect")
+        .attr("class", "interactive-shape")
+        .attr("x", 0)
+        .attr("y", d => yScale(d.team))
+        .attr("width", d => xScale(d.winRate))
+        .attr("height", yScale.bandwidth())
+        .attr("fill", d => getGroupColor(d.group));
+
+    chart.selectAll(".chart-label")
+        .data(data)
+        .join("text")
+        .attr("class", "chart-label")
+        .attr("x", d => xScale(d.winRate) + 6)
+        .attr("y", d => yScale(d.team) + yScale.bandwidth() / 2 + 4)
+        .text(d => `${d.winRate.toFixed(0)}%`);
+
+    bars.on("mouseenter", function(event, d) {
+        d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("fill", d3.color(getGroupColor(d.group)).darker(0.5));
+    }).on("mouseleave", function(event, d) {
+        d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("fill", getGroupColor(d.group));
+    });
+
+    chart.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(yScale));
+
+    chart.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).ticks(5).tickFormat(d => `${d}%`));
+}
+
 async function init() {
+    showLoading("#points-chart");
+    showLoading("#goals-chart");
+    showLoading("#diff-chart");
+    showLoading("#wdl-chart");
+    showLoading("#defense-chart");
+    showLoading("#winrate-chart");
+
     const standingsRaw = await apiGet("/standings?league=1&season=2022");
 
     const standings = standingsRaw.response[0].league.standings
@@ -269,7 +498,13 @@ async function init() {
             team: d.team.name,
             points: d.points,
             goalsFor: d.all.goals.for,
-            goalDiff: d.goalsDiff
+            goalsAgainst: d.all.goals.against,
+            goalDiff: d.goalsDiff,
+            played: d.all.played,
+            win: d.all.win,
+            draw: d.all.draw,
+            lose: d.all.lose,
+            winRate: d.all.played > 0 ? (d.points / d.all.played) * 100 : 0
         }));
 
     const pointsData = [...standings]
@@ -284,9 +519,36 @@ async function init() {
         .sort((a, b) => b.goalDiff - a.goalDiff || d3.ascending(a.team, b.team))
         .slice(0, 10);
 
+    const wdlData = [...standings]
+        .sort((a, b) => b.points - a.points || d3.ascending(a.team, b.team))
+        .slice(0, 10);
+
+    const defenseData = [...standings]
+        .sort((a, b) => a.goalsAgainst - b.goalsAgainst || d3.ascending(a.team, b.team))
+        .slice(0, 10);
+
+    const winRateData = [...standings]
+        .filter(d => d.played > 0)
+        .sort((a, b) => b.winRate - a.winRate || d3.ascending(a.team, b.team))
+        .slice(0, 10);
+
+    hideLoading("#points-chart");
     drawPointsChart(pointsData);
+
+    hideLoading("#goals-chart");
     drawGoalsChart(goalsData);
+
+    hideLoading("#diff-chart");
     drawGoalDiffChart(diffData);
+
+    hideLoading("#wdl-chart");
+    drawWdlChart(wdlData);
+
+    hideLoading("#defense-chart");
+    drawDefenseChart(defenseData);
+
+    hideLoading("#winrate-chart");
+    drawWinRateChart(winRateData);
 }
 
 init().catch(error => {

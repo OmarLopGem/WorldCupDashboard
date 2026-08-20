@@ -86,6 +86,31 @@ h1 {
     stroke: none;
 }
 
+.skeleton-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 12px 0;
+}
+
+.skeleton-bar {
+    height: 16px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #e6e6e6 0%, #f4f4f4 50%, #e6e6e6 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-bar--xs { width: 30%; }
+.skeleton-bar--sm { width: 50%; }
+.skeleton-bar--md { width: 70%; }
+.skeleton-bar--lg { width: 90%; }
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 @media (max-width: 860px) {
     .chart-grid {
         grid-template-columns: 1fr;
